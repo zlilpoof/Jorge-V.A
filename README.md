@@ -60,17 +60,17 @@ Se a melhor correspondência encontrada tiver uma pontuação acima de 0.80, ess
 Se não houver correspondência acima de 0.80, entra em um fluxo de resposta da API da OPENAI utilizando o modelo gpt-3.5-turbo-0301 com texto de embasamento para a personalidade do assistente, 5 respostas pré-estabelecidas com maior correspondência, resultado de pesquisa na internet, hora atual, clima atual, compromissos do dia atual, compromissos do dia posterior e a entrada atual do usuário.
 Após isso, o resultado do retorno da API da OPENAI é exibido ao usuário com sintetização de voz e impressão em campo dedicado na interface.
 
-Exemplos de uso:
+# Exemplos de uso:
 
-Se o usuário falar algo similar a “Que dia é hoje”, haverá uma alta correspondência semântica e será retornado a função tempo.data_atual_formatada que conterá ex: Terça-Feira 10/10/2023.
-Vídeo de demonstração: https://youtu.be/2Jc86rD5zHM
+    Se o usuário falar algo similar a “Que dia é hoje”, haverá uma alta correspondência semântica e será retornado a função tempo.data_atual_formatada que conterá ex: Terça-Feira 10/10/2023.
+    Vídeo de demonstração: https://youtu.be/2Jc86rD5zHM
 
-Se o usuário falar algo similar a  “Como está o clima hoje”, haverá uma alta correspondência semântica e será retornado a função tempo.clima que responderá com o resultado coletado pela api da OpenWeatherMap.
-Vídeo de demonstração: https://youtu.be/E-_2p17CA1E
+    Se o usuário falar algo similar a  “Como está o clima hoje”, haverá uma alta correspondência semântica e será retornado a função tempo.clima que responderá com o resultado coletado pela api da OpenWeatherMap.
+    Vídeo de demonstração: https://youtu.be/E-_2p17CA1E
 
-Se o usuário perguntar algo similar a “Estou pensando em passear com o cachorro, acha uma boa ideia?”, a entrada do usuário irá no fluxo de geração de texto com todo o embasamento encontrado pela análise semântica, personalidade do assistente, resultado de pesquisa na internet, hora atual, clima atual, compromissos do dia atual, compromissos do dia posterior e a entrada atual do usuário.
-Exemplo de resposta: Pode crer, mano! Dar um rolê com o Akamaru é uma baita ideia. Além de ser um rolêzão, é um ótimo exercício pra ele e pra você também. Mas, não esquece de levar uns petiscos pra recompensar o bichinho! Ta ligado né?
-Vídeo de demonstração: https://youtu.be/l-85IzoTbrw
+    Se o usuário perguntar algo similar a “Estou pensando em passear com o cachorro, acha uma boa ideia?”, a entrada do usuário irá no fluxo de geração de texto com todo o embasamento encontrado pela análise semântica, personalidade do assistente, resultado de pesquisa na internet, hora atual, clima atual, compromissos do dia atual, compromissos do dia posterior e a entrada atual do usuário.
+    Exemplo de resposta: Pode crer, mano! Dar um rolê com o Akamaru é uma baita ideia. Além de ser um rolêzão, é um ótimo exercício pra ele e pra você também. Mas, não esquece de levar uns petiscos pra recompensar o bichinho! Ta ligado né?
+    Vídeo de demonstração: https://youtu.be/l-85IzoTbrw
 
 # Conclusão
 
