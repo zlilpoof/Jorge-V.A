@@ -2,7 +2,6 @@ from sentence_transformers import SentenceTransformer, util
 import context_sentences
 import config
 
-
 model = SentenceTransformer('mpjan/msmarco-distilbert-base-tas-b-mmarco-pt-300k')
 
 call_action = model.encode(f"{config.trigger_assistant_call_action} {config.assistant_name}")
