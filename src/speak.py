@@ -12,7 +12,6 @@ import weather
 import llm_response
 import config
 
-
 try:
     audio_model = Model("modelo")
     print("Model loaded successfully.")
