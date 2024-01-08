@@ -1,26 +1,27 @@
 import tkinter as tk
 import threading
+import config
 
 root = None
-encerrar_interface = threading.Event()
+break_interface = threading.Event()
 chat_text1 = None
 chat_text2_top = None
 chat_text2_bottom = None
 
-def criar_interface_grafica():
+def create_interface():
     global root, chat_text1, chat_text2_top, chat_text2_bottom
     root = tk.Tk()
-    root.title("Jorge Bagre")
+    root.title(f"{config.assistant_name} {config.assistant_lastname}")
     root.geometry("1400x400")
     root.iconbitmap("icone.ico")
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
     root.configure(bg="gray")
 
-    imagem = tk.PhotoImage(file="jorge.png")
-    imagem = imagem.subsample(3, 3)
-    imagem_label = tk.Label(root, image=imagem, bg="white")
-    imagem_label.grid(row=0, column=0, padx=10, pady=10, rowspan=3)
+    image = tk.PhotoImage(file="jorge.png")
+    image = image.subsample(3, 3)
+    image_label = tk.Label(root, image=image, bg="white")
+    image_label.grid(row=0, column=0, padx=10, pady=10, rowspan=3)
 
     chat_frame1 = tk.Frame(root, bg="black")
     chat_frame1.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
@@ -42,33 +43,34 @@ def criar_interface_grafica():
     chat_text2_bottom.config(state=tk.DISABLED)
     chat_text2_bottom.pack(expand=True, fill="both")
 
-    fechar_button = tk.Button(root, text="Fechar", command=fechar_janela)
+    fechar_button = tk.Button(root, text="Fechar", command=close_window)
     fechar_button.grid(row=3, column=0, columnspan=3)
 
     root.mainloop()
 
-def fechar_janela():
+def close_window():
     root.destroy()
-    encerrar_interface.set()
+    break_interface.set()
 
-def exibir_mensagem(mensagem):
+def show_message_assistant(message):
     chat_text1.config(state=tk.NORMAL)
     chat_text1.delete(1.0, tk.END)
-    chat_text1.insert(tk.END, mensagem + "\n")
+    chat_text1.insert(tk.END, message + "\n")
     chat_text1.config(state=tk.DISABLED)
     
-def exibir_mensagem_chat2(mensagem):
+def show_message_user(message):
     chat_text2_top.config(state=tk.NORMAL)
     chat_text2_top.delete(1.0, tk.END)
-    chat_text2_top.insert(tk.END, mensagem + "\n")
+    chat_text2_top.insert(tk.END, message + "\n")
     chat_text2_top.config(state=tk.DISABLED)
 
-def exibir_mensagem_chat3(mensagem):
+def show_message_search_result(message):
     chat_text2_bottom.config(state=tk.NORMAL)
     chat_text2_bottom.delete(1.0, tk.END)
-    chat_text2_bottom.insert(tk.END, mensagem + "\n")
+    chat_text2_bottom.insert(tk.END, message + "\n")
     chat_text2_bottom.config(state=tk.DISABLED)
+    
 
-interface_thread = threading.Thread(target=criar_interface_grafica)
+interface_thread = threading.Thread(target=create_interface)
 interface_thread.daemon = True
 interface_thread.start()
