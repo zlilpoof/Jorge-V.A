@@ -18,6 +18,8 @@ def current_month():
 def current_year():
     return datetime.datetime.now().year
 
-def current_hour():
+def complete_current_time():
     return datetime.datetime.now().strftime("%H:%M:%S")
-    
+
+def current_hour():
+    return datetime.datetime.now().strftime("%H")

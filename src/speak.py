@@ -12,21 +12,16 @@ import weather
 import llm_response
 import config
 
-try:
+if not config.debug_mode:
     audio_model = Model("modelo")
-    print("Model loaded successfully.")
-except Exception as e:
-    print("Failed to create a model:", str(e))
-    exit(1)
-
-speaker=pyttsx3.init()
-speaker.setProperty('voice', 'Microsoft Maria Desktop - Portuguese(Brazil)')
-rate = speaker.getProperty('rate')
-speaker.setProperty('rate', rate-200)
-p = pyaudio.PyAudio()
-stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=512)
-stream.start_stream()
-rec = KaldiRecognizer(audio_model, 16000)
+    speaker=pyttsx3.init()
+    speaker.setProperty('voice', 'Microsoft Maria Desktop - Portuguese(Brazil)')
+    rate = speaker.getProperty('rate')
+    speaker.setProperty('rate', rate-200)
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=512)
+    stream.start_stream()
+    rec = KaldiRecognizer(audio_model, 16000)
 
 def assistant_show_in_interface_and_speak(message):
     if config.debug_mode:
@@ -37,10 +32,10 @@ def assistant_show_in_interface_and_speak(message):
         speaker.runAndWait()
 
 def interactive_speak(message, bip=True):
-    if config.debug_mode:
-        result = input("Type your question: ")
-        return result
-    else:
+    user_input = interface.get_user_input()
+    if user_input != "":
+        return user_input
+    if not config.debug_mode:
         try:
             assistant_show_in_interface_and_speak(message)
             if bip:
@@ -73,15 +68,10 @@ def interactive_speak(message, bip=True):
                     stream.read(stream.get_read_available())
                 
 def menu():
-    context_sentences.answers[7] = "Agora são " + local_time.current_hour()
-    context_sentences.answers[8] = "Agora são " + local_time.current_hour()
-    if local_time.current_hour() == "00:00:00":
+    if local_time.complete_current_time() == "00:00:00":
         print(f"Appointment deleted: {schedule.delete_appointment_by_day(local_time.current_day()-1)}")
-        
     result = interactive_speak("")
-        
     if result:
-        print(result)
         interface.show_message_user(result)
         encoded_result = models.model.encode(result)
         exit = models.util.cos_sim(models.exit_reference, encoded_result)
@@ -107,7 +97,7 @@ def menu():
             day = local_time.current_day()
             month = local_time.current_month()
             date = local_time.current_date_formatted()
-            current_weather = weather.weather()
+            current_weather = weather.weather_verify()
             listed_appointments = schedule.list_appointments_with_day_and_month(day, month)
             listed_appointments__str = "\n".join(listed_appointments)
             assistant_show_in_interface_and_speak(f"Bom dia, hoje é {date}. {current_weather}")
@@ -178,7 +168,7 @@ def speak_loop():
     else:
         try:
             user_input = interactive_speak("", False)
-            if(user_input != ""):
+            if user_input != "":
                 encoded_input = models.model.encode(user_input)
                 call_action_probability = models.util.cos_sim(models.call_action, encoded_input)
                 print(f"Activation probability: {call_action_probability}")

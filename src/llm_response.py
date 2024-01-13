@@ -1,26 +1,25 @@
 import openai
 import config
 import local_time
-import weather
 import schedule
 import models
 import context_sentences
 import interface
 import search
+import weather
 
 possible_matches = {}
-possible_matches[0] = weather.weather()
-possible_matches[1] = local_time.current_date_formatted()
 
 openai.api_key = config.openai_api_key
+
 def llm_response(prompt):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0301",
         messages=[
             {"role": "system", "content": f"Seu nome é {config.assistant_name} {config.assistant_lastname}."},
             {"role": "system", "content": f"Você é um assistente {config.assistant_humor}."},
-            {"role": "system", "content": f"Hora atual: {local_time.current_hour()};"},
-            {"role": "system", "content": f"Clima atual: {weather.weather()};"},
+            {"role": "system", "content": f"Hora atual: {local_time.complete_current_time()};"},
+            {"role": "system", "content": f"Clima atual: {weather.weather_verify()};"},
             {"role": "system", "content": f"Minha cidade é {config.city_name};"},
             {"role": "system", "content": f"Responda com girias; Exemplo: {config.assistant_slangs}."},
             {"role": "user", "content": prompt}
