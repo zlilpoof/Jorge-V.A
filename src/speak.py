@@ -32,45 +32,44 @@ def assistant_show_in_interface_and_speak(message):
         speaker.runAndWait()
 
 def interactive_speak(message, bip=True):
-    user_input = interface.get_user_input()
-    if user_input != "":
-        return user_input
-    if not config.debug_mode:
-        try:
-            assistant_show_in_interface_and_speak(message)
-            if bip:
-                print("PODE FALAR")
-                sounds.bip()
-        except OSError as e:
-            print("Erro no audio")
-        while True:
-            try:
-                data = stream.read(512)
-                if len(data) == 0:
-                    break
-                if rec.AcceptWaveform(data):
-                    captured = rec.Result()
-                    captured_dict = json.loads(captured)
-                    print(captured_dict.get('text'))
-                    formated_capture = captured_dict.get('text')
-                    encoded_interaction = models.model.encode(formated_capture)
-                    cancel = models.util.cos_sim(models.cancel_reference, encoded_interaction)
-                    print(f"Chance de cancelar de: {cancel}") 
-                    if cancel >= 0.90:
-                        print(cancel)
+    assistant_show_in_interface_and_speak(message)
+    if bip:
+        print("PODE FALAR")
+        sounds.bip()
+    while True:
+        user_input = interface.get_user_input()
+        if user_input != None:
+            print(user_input)
+            return user_input
+        else:
+            if not config.debug_mode:
+                try:
+                    data = stream.read(512)
+                    if len(data) == 0:
                         break
-                    else:
-                        if formated_capture != "":
-                            return formated_capture
-            except OSError as e:
-                print("OSError:", str(e))
-                while stream.get_read_available() > 0:
-                    stream.read(stream.get_read_available())
-                
+                    if rec.AcceptWaveform(data):
+                        captured = rec.Result()
+                        captured_dict = json.loads(captured)
+                        print(captured_dict.get('text'))
+                        formated_capture = captured_dict.get('text')
+                        encoded_interaction = models.model.encode(formated_capture)
+                        cancel = models.util.cos_sim(models.cancel_reference, encoded_interaction)
+                        print(f"Chance de cancelar de: {cancel}") 
+                        if cancel >= 0.90:
+                            print(cancel)
+                            break
+                        else:
+                            if formated_capture != "":
+                                return formated_capture
+                except OSError as e:
+                    print("OSError:", str(e))
+                    while stream.get_read_available() > 0:
+                        stream.read(stream.get_read_available())
 def menu():
     if local_time.complete_current_time() == "00:00:00":
         print(f"Appointment deleted: {schedule.delete_appointment_by_day(local_time.current_day()-1)}")
     result = interactive_speak("")
+    print(result)
     if result:
         interface.show_message_user(result)
         encoded_result = models.model.encode(result)
@@ -168,7 +167,7 @@ def speak_loop():
     else:
         try:
             user_input = interactive_speak("", False)
-            if user_input != "":
+            if user_input != "" and user_input != None:
                 encoded_input = models.model.encode(user_input)
                 call_action_probability = models.util.cos_sim(models.call_action, encoded_input)
                 print(f"Activation probability: {call_action_probability}")

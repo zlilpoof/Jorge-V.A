@@ -13,8 +13,9 @@ user_input = ""
 def get_user_input():
     global user_input
     actual_input = user_input
-    user_input = ""
-    return actual_input
+    if actual_input != "":
+        user_input = ""
+        return actual_input
 
 def create_interface():
     global root, chat_text1, chat_text2_top, chat_text2_bottom, user_input_entry
