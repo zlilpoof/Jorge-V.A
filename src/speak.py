@@ -24,7 +24,7 @@ if not config.debug_mode:
     rec = KaldiRecognizer(audio_model, 16000)
 
 def assistant_show_in_interface_and_speak(message):
-    if config.debug_mode:
+    if config.debug_mode or config.sound_muted:
         interface.show_message_assistant(message)
     else:
         interface.show_message_assistant(message)
@@ -32,8 +32,9 @@ def assistant_show_in_interface_and_speak(message):
         speaker.runAndWait()
 
 def interactive_speak(message, bip=True):
-    assistant_show_in_interface_and_speak(message)
-    if bip:
+    if message:
+        assistant_show_in_interface_and_speak(message)
+    if bip and not config.sound_muted and not config.mic_muted and not config.debug_mode:
         print("PODE FALAR")
         sounds.bip()
     while True:
@@ -42,7 +43,7 @@ def interactive_speak(message, bip=True):
             print(user_input)
             return user_input
         else:
-            if not config.debug_mode:
+            if not config.debug_mode and not config.mic_muted:
                 try:
                     data = stream.read(512)
                     if len(data) == 0:
@@ -162,7 +163,7 @@ def menu():
             assistant_show_in_interface_and_speak(response)
                 
 def speak_loop():
-    if config.debug_mode:
+    if config.debug_mode or config.mic_muted:
         menu()
     else:
         try:

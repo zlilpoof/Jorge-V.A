@@ -12,6 +12,10 @@ debug_mode = False
 # LLM CONFIG
 openai_api_key = "open-ai_api-key"
 
+#USE CASE CONFIG
+mic_muted = False
+sound_muted = False
+
 #WEATHER CONFIG
 weather_api_key = "open_weather_map__api-key"
 city_name = "open_weather_map__city-name"
