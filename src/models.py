@@ -1,23 +1,27 @@
 from sentence_transformers import SentenceTransformer, util
 import context_sentences
-import config
+from config import settings
 
-model = SentenceTransformer('mpjan/msmarco-distilbert-base-tas-b-mmarco-pt-300k')
+model = SentenceTransformer('mpjan/msmarco-distilbert-base-tas-b-mmarco-pt-300k')            
 
-call_action = model.encode(f"{config.trigger_assistant_call_action} {config.assistant_name}")
-exit_reference = model.encode(f"{config.exit_trigger}")
-register_appointment_reference = model.encode(f"{config.register_appointment_trigger}")
-read_appointment_reference = model.encode(f"{config.read_appointment_trigger}")
-delete_appointment_reference = model.encode(f"{config.delete_appointment_trigger}")
-cancel_reference = model.encode(f"{config.cancel_trigger}")
-read_appointment_by_data_reference = model.encode(f"{config.read_appointment_by_data_trigger}")
-good_morning_reference = model.encode(f"{config.good_morning_trigger}")
+call_action = model.encode(f"{settings.trigger_assistant_call_action} {settings.assistant_name}")
+exit_reference = model.encode(f"{settings.exit_trigger}")
+register_appointment_reference = model.encode(f"{settings.register_appointment_trigger}")
+read_appointment_reference = model.encode(f"{settings.read_appointment_trigger}")
+delete_appointment_reference = model.encode(f"{settings.delete_appointment_trigger}")
+cancel_reference = model.encode(f"{settings.cancel_trigger}")
+read_appointment_by_data_reference = model.encode(f"{settings.read_appointment_by_data_trigger}")
+good_morning_reference = model.encode(f"{settings.good_morning_trigger}")
 
-encoded_words = [None] * len(context_sentences.words)
 encoded_numbers_in_words = [None] * len(context_sentences.numbers_in_words)
 
-for i in range(len(context_sentences.words)):
-    encoded_words[i] = model.encode(context_sentences.words[i])
+encoded_words = []
+def encode_words():
+    global encoded_words
+    words = context_sentences.get_words()
+    encoded_words = [None] * len(words)
+    for i in range(len(words)):
+        encoded_words[i] = model.encode(words[i])
 
 for k in range(len(context_sentences.numbers_in_words)):
     encoded_numbers_in_words[k] = model.encode(context_sentences.numbers_in_words[k])
@@ -40,4 +44,5 @@ def convert_numbers(text_number):
                 number_addres = g
         g += 1
     print(f"The answer is: {context_sentences.numbers_in_words[number_addres+1]}")
-    return number_addres + 1
+    
+    return number_addres + 1 if value_ref_cosine > 0.70 else None

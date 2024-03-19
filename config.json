@@ -1,0 +1,23 @@
+{
+    "debug_mode": false,
+    "mic_muted": false,
+    "sound_muted": false,
+    "openai_api_key": "OPENAI_API_KEY",
+    "weather_api_key": "OPENWEATHERMAP_API_KEY",
+    "city_name": "CITY_NAME",
+    "weather_city": "OPENWEATHERMAP_CITY",
+    "weather_language": "OPENWEATHERMAP_LANGUAGE",
+    "search_max_results": 5,
+    "trigger_assistant_call_action": "Salve",
+    "assistant_name": "Jorge",
+    "assistant_lastname": "V.A",
+    "assistant_humor": "engraçado",
+    "assistant_slangs": "Sim, mano; Pode crer; Ta ligado né; Poggers",
+    "exit_trigger": "Sair",
+    "register_appointment_trigger": "Quero cadastrar um compromisso",
+    "read_appointment_trigger": "Quais meus compromissos",
+    "delete_appointment_trigger": "Deletar compromisso",
+    "cancel_trigger": "Cancelar",
+    "read_appointment_by_data_trigger": "Quais compromissos tenho na data",
+    "good_morning_trigger": "Bom dia"
+}

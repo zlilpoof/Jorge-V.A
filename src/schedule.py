@@ -1,28 +1,25 @@
-import mysql.connector
-import config
+import sqlite3
+from config import settings
+import os
 
 def connect_to_db():
     try:
-        conn = mysql.connector.connect(
-            host="127.0.0.1",
-            port=3306,
-            user="root",
-            password="",
-            database=f"{config.assistant_name}"
-        )
+        db_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', f'{settings.assistant_name}.db'))
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
         create_table_query = """
         CREATE TABLE IF NOT EXISTS appointments (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            day INT,
-            month INT,
-            hour INT,
-            appointment VARCHAR(255)
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            day INTEGER,
+            month INTEGER,
+            hour INTEGER,
+            appointment TEXT
         )
         """
         cursor.execute(create_table_query)
-        cursor.close()
+        conn.commit()
+
         return conn
     except Exception as e:
         print(f"Erro ao conectar ao banco de dados: {str(e)}")
@@ -31,7 +28,7 @@ def register_appointment(day, month, hour, appointment):
     try:
         conn = connect_to_db()
         cursor = conn.cursor()
-        query = "INSERT INTO appointments (day, month, hour, appointment) VALUES (%s, %s, %s, %s)"
+        query = "INSERT INTO appointments (day, month, hour, appointment) VALUES (?, ?, ?, ?)"
         values = (day, month, hour, appointment)
         cursor.execute(query, values)
         conn.commit()
@@ -46,7 +43,7 @@ def list_appointments_with_day_and_month(day, month):
     try:
         conn = connect_to_db()
         cursor = conn.cursor()
-        query = "SELECT id, day, month, hour, appointment FROM appointments WHERE day = %s AND month = %s"
+        query = "SELECT id, day, month, hour, appointment FROM appointments WHERE day = ? AND month = ?"
         cursor.execute(query, (day, month))
 
         for id, day, month, hour, appointment in cursor.fetchall():
@@ -78,7 +75,7 @@ def delete_appointment_by_id(id):
     try:
         conn = connect_to_db()
         cursor = conn.cursor()
-        query = "DELETE FROM appointments WHERE id = %s"
+        query = "DELETE FROM appointments WHERE id = ?"
         values = (id,)
         cursor.execute(query, values)
         if cursor.rowcount > 0:
@@ -95,7 +92,7 @@ def delete_appointment_by_day(day):
     try:
         conn = connect_to_db()
         cursor = conn.cursor()
-        query = "DELETE FROM appointments WHERE day = %s"
+        query = "DELETE FROM appointments WHERE day = ?"
         values = (day,)
         cursor.execute(query, values)
         if cursor.rowcount > 0:

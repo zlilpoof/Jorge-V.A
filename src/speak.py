@@ -5,15 +5,17 @@ from vosk import Model, KaldiRecognizer
 import pyaudio
 import sounds
 import json
-import context_sentences
 import local_time
 import schedule
 import weather
 import llm_response
-import config
+from config import settings
+import os
 
-if not config.debug_mode:
-    audio_model = Model("modelo")
+
+if not settings.debug_mode:
+    model_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'modelo'))
+    audio_model = Model(model_path)
     speaker=pyttsx3.init()
     speaker.setProperty('voice', 'Microsoft Maria Desktop - Portuguese(Brazil)')
     rate = speaker.getProperty('rate')
@@ -23,27 +25,28 @@ if not config.debug_mode:
     stream.start_stream()
     rec = KaldiRecognizer(audio_model, 16000)
 
+
 def assistant_show_in_interface_and_speak(message):
-    if config.debug_mode or config.sound_muted:
+    if settings.debug_mode or settings.sound_muted:
         interface.show_message_assistant(message)
     else:
         interface.show_message_assistant(message)
         speaker.say(message)
         speaker.runAndWait()
 
+
 def interactive_speak(message, bip=True):
     if message:
         assistant_show_in_interface_and_speak(message)
-    if bip and not config.sound_muted and not config.mic_muted and not config.debug_mode:
+    if bip and not settings.sound_muted and not settings.mic_muted and not settings.debug_mode:
         print("PODE FALAR")
         sounds.bip()
     while True:
         user_input = interface.get_user_input()
         if user_input != None:
-            print(user_input)
             return user_input
         else:
-            if not config.debug_mode and not config.mic_muted:
+            if not settings.mic_muted and not settings.debug_mode:
                 try:
                     data = stream.read(512)
                     if len(data) == 0:
@@ -59,13 +62,16 @@ def interactive_speak(message, bip=True):
                         if cancel >= 0.90:
                             print(cancel)
                             break
-                        else:
-                            if formated_capture != "":
-                                return formated_capture
+                        if formated_capture != "":
+                            return formated_capture
+                        break
+
                 except OSError as e:
                     print("OSError:", str(e))
                     while stream.get_read_available() > 0:
                         stream.read(stream.get_read_available())
+                
+                
 def menu():
     if local_time.complete_current_time() == "00:00:00":
         print(f"Appointment deleted: {schedule.delete_appointment_by_day(local_time.current_day()-1)}")
@@ -85,55 +91,56 @@ def menu():
             print("user exit")
         if read_appointment_by_data >= 0.80:
             day = interactive_speak("Em qual dia?")
-            if day != None:
-                month = interactive_speak("Em qual mês?")
-                if month != None:
-                    day_number = models.convert_numbers(day)
-                    month_number = models.convert_numbers(month)
-                    listed_appointments = schedule.list_appointments_with_day_and_month(day_number, month_number)
-                    listed_appointments__str = "\n".join(listed_appointments)
-                    assistant_show_in_interface_and_speak(listed_appointments__str)
+            day_number = models.convert_numbers(day)
+            if day_number is None:
+                assistant_show_in_interface_and_speak(f"Operação cancelada")
+                return
+            month = interactive_speak("Em qual mês?")
+            month_number = models.convert_numbers(month)
+            if month_number is None:
+                assistant_show_in_interface_and_speak(f"Operação cancelada")
+                return
+            listed_appointments = schedule.list_appointments_with_day_and_month(day_number, month_number)
+            if not listed_appointments:
+                assistant_show_in_interface_and_speak(f"Não há compromissos para o dia {day_number}/{month_number}")
+            else:
+                listed_appointments__str = "\n".join(listed_appointments)
+                assistant_show_in_interface_and_speak(listed_appointments__str)
         elif good_morning >= 0.80:
-            day = local_time.current_day()
-            month = local_time.current_month()
-            date = local_time.current_date_formatted()
+            day, month, date = local_time.current_day(), local_time.current_month(), local_time.current_date_formatted()
             current_weather = weather.weather_verify()
             listed_appointments = schedule.list_appointments_with_day_and_month(day, month)
             listed_appointments__str = "\n".join(listed_appointments)
             assistant_show_in_interface_and_speak(f"Bom dia, hoje é {date}. {current_weather}")
             if listed_appointments__str != "":
-                assistant_show_in_interface_and_speak("Seus compromissos de hoje são")
+                assistant_show_in_interface_and_speak("Seus compromissos de hoje são:")
                 assistant_show_in_interface_and_speak(listed_appointments__str)
         elif register_appointment >= 0.80:
-            month_appointment = None
-            hour_appointment = None
-            appointment = None
             day_appointment = interactive_speak("Que dia é seu compromisso?")
-            interface.show_message_user(day_appointment)
-            if day_appointment != None:
-                month_appointment = interactive_speak("De que mês?")
-                interface.show_message_user(month_appointment)
-                if month_appointment != None:
-                    hour_appointment = interactive_speak("Que hora?")
-                    interface.show_message_user(hour_appointment)
-                    if hour_appointment != None:
-                        appointment = interactive_speak("O que fará nesse compromisso?")
-                        interface.show_message_user(appointment)
-                        if appointment == None:
-                            assistant_show_in_interface_and_speak("Operação cancelada")
-                    else:
-                        assistant_show_in_interface_and_speak("Operação cancelada")
-                else:
-                    assistant_show_in_interface_and_speak("Operação cancelada")
-            else:
+            converted_day = models.convert_numbers(day_appointment)
+            if converted_day is None:
                 assistant_show_in_interface_and_speak("Operação cancelada")
-                
-            if day_appointment != None and month_appointment != None and hour_appointment != None and appointment != None:
-                converted_day = models.convert_numbers(day_appointment)
-                converted_month = models.convert_numbers(month_appointment)
-                converted_hour = models.convert_numbers(hour_appointment)
-                status = schedule.register_appointment(converted_day, converted_month, converted_hour, appointment)
-                assistant_show_in_interface_and_speak(f"{status} para o dia {converted_day} do {converted_month}")
+                return
+            interface.show_message_user(f"{converted_day}")
+            month_appointment = interactive_speak("De que mês?")
+            converted_month = models.convert_numbers(month_appointment)
+            if converted_month is None:
+                assistant_show_in_interface_and_speak("Operação cancelada")
+                return
+            interface.show_message_user(f"{converted_month}")
+            hour_appointment = interactive_speak("Que hora?")
+            converted_hour = models.convert_numbers(hour_appointment)
+            if converted_hour is None:
+                assistant_show_in_interface_and_speak("Operação cancelada")
+                return
+            interface.show_message_user(f"{converted_hour}")
+            appointment = interactive_speak("O que fará nesse compromisso?")
+            if appointment is None:
+                assistant_show_in_interface_and_speak("Operação cancelada")
+                return
+            interface.show_message_user(appointment)
+            status = schedule.register_appointment(converted_day, converted_month, converted_hour, appointment)
+            assistant_show_in_interface_and_speak(f"{status} para o dia {converted_day} do {converted_month}")
         elif read_appointments >= 0.80:
             appointments = schedule.list_appointments()
             if appointments != []:
@@ -144,26 +151,26 @@ def menu():
                 assistant_show_in_interface_and_speak("Não há compromissos registrados")
         elif delete_appointment >= 0.80:
             choice = interactive_speak("Qual compromisso quer deletar?")
-            assistant_show_in_interface_and_speak("Qual compromisso quer deletar?")
-            interface.show_message_user(choice)
+            formated_choice = models.convert_numbers(choice)
+            interface.show_message_user(f"{formated_choice}")
             encoded_choice = models.model.encode(choice)
             exit_test = models.util.cos_sim(encoded_choice, models.cancel_reference)
             if exit_test >= 0.70:
                 assistant_show_in_interface_and_speak("Operação cancelada")
+                return
+            result = schedule.delete_appointment_by_id(formated_choice)
+            if result:
+                assistant_show_in_interface_and_speak(f"Compromisso {formated_choice} deletado com sucesso.")
             else:
-                formated_choice = models.convert_numbers(choice)
-                result = schedule.delete_appointment_by_id(formated_choice)
-                if result == True:
-                    assistant_show_in_interface_and_speak(f"Compromisso {formated_choice} deletado com sucesso.")
-                else:
-                    assistant_show_in_interface_and_speak(f"Ocorreu um erro ao deletar o compromisso {formated_choice}.")
+                assistant_show_in_interface_and_speak(f"Ocorreu um erro ao deletar o compromisso {choice}.")
         else:
             interface.show_message_user(result)
             response = llm_response.generate_response(result)
             assistant_show_in_interface_and_speak(response)
                 
+                
 def speak_loop():
-    if config.debug_mode or config.mic_muted:
+    if settings.debug_mode or settings.mic_muted:
         menu()
     else:
         try:

@@ -5,9 +5,7 @@ def initialize_pygame():
     pygame.init()
 
 def bip():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir = os.path.dirname(current_dir)
-    bip_mp3 = os.path.join(parent_dir, "bip.mp3")
+    bip_mp3 = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'sounds', 'bip.mp3'))
 
     pygame.mixer.init()
     pygame.mixer.music.load(bip_mp3)
