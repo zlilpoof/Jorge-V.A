@@ -5,6 +5,7 @@ from config import settings
 from users import user
 import os
 
+
 root = None
 break_interface = threading.Event()
 chat_text1 = None
@@ -15,6 +16,7 @@ sound_muted_button = None
 user_input_entry = None
 user_input = ""
 
+
 def get_user_input():
     global user_input
     actual_input = user_input
@@ -24,8 +26,8 @@ def get_user_input():
     
 
 def open_menu():
-    saved_questions = user.load_questions()
-    saved_answers = user.load_answers()
+    saved_answers, saved_questions = user.contexts()
+    
     def save_data():
         questions = []
         answers = []
@@ -34,7 +36,7 @@ def open_menu():
             if tree.item(item)["values"][1] != "": answers.append(tree.item(item)["values"][1])
             settings.save(questions=questions, answers=answers)
         menu_window.destroy()
-
+        
     menu_window = tk.Toplevel(root)
     menu_window.title("Menu")
     menu_window.geometry("600x400")
@@ -42,7 +44,6 @@ def open_menu():
     tree = ttk.Treeview(menu_window, columns=("Pergunta", "Resposta"), show="headings")
     tree.heading("Pergunta", text="Pergunta")
     tree.heading("Resposta", text="Resposta")
-
 
     num_filled_lines = len(saved_questions)
     num_empty_lines = 10 + num_filled_lines - len(saved_questions)
@@ -155,6 +156,7 @@ def create_interface():
 
     root.mainloop()
     
+    
 def mute_microfone():
     global mic_muted_button
     _muted = settings.change_mic()
@@ -163,6 +165,7 @@ def mute_microfone():
     else:
         mic_muted_button.config(text="Microfone Activated", bg="green")
         
+        
 def mute_sound():
     global sound_muted_button
     _muted = settings.change_sound()
@@ -170,33 +173,39 @@ def mute_sound():
         sound_muted_button.config(text="Sound Muted", bg="red")
     else:
         sound_muted_button.config(text="Sound Activated", bg="green")
+        
 
 def close_window():
     root.destroy()
     break_interface.set()
+    
 
 def send_message(event=None):
     global user_input
     user_input = user_input_entry.get()
     user_input_entry.delete(0, tk.END)
+    
 
 def show_message_assistant(message):
     chat_text1.config(state=tk.NORMAL)
     chat_text1.delete(1.0, tk.END)
     chat_text1.insert(tk.END, message + "\n")
     chat_text1.config(state=tk.DISABLED)
+    
 
 def show_message_user(message):
     chat_text2_top.config(state=tk.NORMAL)
     chat_text2_top.delete(1.0, tk.END)
     chat_text2_top.insert(tk.END, message + "\n")
     chat_text2_top.config(state=tk.DISABLED)
+    
 
 def show_message_search_result(message):
     chat_text2_bottom.config(state=tk.NORMAL)
     chat_text2_bottom.delete(1.0, tk.END)
     chat_text2_bottom.insert(tk.END, message + "\n")
     chat_text2_bottom.config(state=tk.DISABLED)
+    
 
 interface_thread = threading.Thread(target=create_interface)
 interface_thread.daemon = True

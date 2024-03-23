@@ -30,21 +30,13 @@ class User:
             f.write('\n'.join(data))
             
             
-    def reload(self):
-        self.load_answers()
-        self.load_questions()
+    def contexts(self):
+        return self.load_answers(), self.load_questions()
             
             
     def save(self, questions, answers):
-        try:
-            self.save_questions(questions)
-        except RuntimeError:
-            print("UNABLE TO SAVE QUESTIONS")
-        try:
-            self.save_answers(answers)
-        except RuntimeError:
-            print("UNABLE TO SAVE ANSWERS")
-        self.reload()
+        self.save_questions(questions)
+        self.save_answers(answers)
         
         
 questions = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'questions.txt'))
